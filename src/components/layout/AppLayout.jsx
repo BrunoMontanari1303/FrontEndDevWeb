@@ -1,44 +1,78 @@
-import { Container, Navbar, Nav, Offcanvas } from 'react-bootstrap'
-import { useState } from 'react'
-import { Outlet, NavLink } from 'react-router-dom'
-
+import { Outlet } from 'react-router-dom'
+import { useAuthStore } from '../../features/auth/useAuthStore'
+import { Container, Navbar, Nav, Button } from 'react-bootstrap'
+import { useNavigate, Link } from 'react-router-dom'
 
 export default function AppLayout() {
-    const [open, setOpen] = useState(false)
-    return (
-        <>
-            <Navbar bg="light" expand="lg" className="shadow-sm">
-                <Container fluid>
-                    <Navbar.Brand onClick={() => setOpen(true)} role="button">☰ TMS</Navbar.Brand>
-                    <Nav className="ms-auto">
-                        <Nav.Link as={NavLink} to="/">Dashboard</Nav.Link>
-                        <Nav.Link as={NavLink} to="/shipments">Pedidos</Nav.Link>
-                        <Nav.Link as={NavLink} to="/loads">Cargas</Nav.Link>
-                        <Nav.Link as={NavLink} to="/billing">Faturamento</Nav.Link>
-                    </Nav>
-                </Container>
-            </Navbar>
+  const { user, clear } = useAuthStore()
+  const navigate = useNavigate()
+  const role = user?.papel
+  const isGestor = role === 3 || role === 'GESTOR'
 
+  const handleLogout = () => {
+    clear()
+    navigate('/login')
+  }
 
-            <Offcanvas show={open} onHide={() => setOpen(false)}>
-                <Offcanvas.Header closeButton>
-                    <Offcanvas.Title>Menu</Offcanvas.Title>
-                </Offcanvas.Header>
-                <Offcanvas.Body>
-                    <Nav className="flex-column gap-2">
-                        <Nav.Link as={NavLink} to="/" onClick={() => setOpen(false)}>Dashboard</Nav.Link>
-                        <Nav.Link as={NavLink} to="/shipments" onClick={() => setOpen(false)}>Pedidos</Nav.Link>
-                        <Nav.Link as={NavLink} to="/loads" onClick={() => setOpen(false)}>Planejamento</Nav.Link>
-                        <Nav.Link as={NavLink} to="/tracking" onClick={() => setOpen(false)}>Tracking</Nav.Link>
-                        <Nav.Link as={NavLink} to="/settings" onClick={() => setOpen(false)}>Cadastros</Nav.Link>
-                    </Nav>
-                </Offcanvas.Body>
-            </Offcanvas>
+  return (
+    <>
+      <Navbar bg="dark" variant="dark" expand="lg" className="mb-3">
+        <Container fluid>
+          <Navbar.Brand as={Link} to="/dashboard">
+            <img
+              src="/logo.png"
+              alt="Logix"
+              width={24}
+              height={24}
+              className="me-2"
+            />
+            LOGIX
+          </Navbar.Brand>
 
+          <Navbar.Toggle aria-controls="main-navbar" />
+          <Navbar.Collapse id="main-navbar">
+            <Nav className="me-auto">
+              <Nav.Link as={Link} to="/dashboard">
+                Dashboard
+              </Nav.Link>
+              <Nav.Link as={Link} to="/shipments">
+                Pedidos
+              </Nav.Link>
+              {isGestor && (
+                <Nav.Link as={Link} to="/shipments/accepted">
+                  Pedidos Aceitos
+                </Nav.Link>
+              )}
+            </Nav>
 
-            <Container fluid className="py-3">
-                <Outlet />
-            </Container>
-        </>
-    )
+            <div className="d-flex align-items-center gap-2">
+              {user && (
+                <span className="text-light me-2">
+                  Olá, <strong>{user.nome}</strong>
+                </span>
+              )}
+
+              <Link to="/meu-perfil">
+                <Button variant="outline-light" size="sm">
+                  Meu perfil
+                </Button>
+              </Link>
+
+              <Button
+                variant="outline-danger"
+                size="sm"
+                onClick={handleLogout}
+              >
+                Sair
+              </Button>
+            </div>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
+
+      <Container fluid>
+        <Outlet />
+      </Container>
+    </>
+  )
 }

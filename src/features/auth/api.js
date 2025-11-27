@@ -1,17 +1,41 @@
-import { http } from '../../services/http'
+import api from '../../services/api'
 import { useAuthStore } from './useAuthStore'
 
-
-//export async function login(email, password) {
-//   const { data } = await http.post('/auth/login', { email, password })
-//   useAuthStore.getState().setSession(data.access_token, data.user)
-//}
-
+// login: envia email e senha para o backend e guarda token
 export async function login(email, password) {
-    if (import.meta.env.DEV && email) {
-        useAuthStore.getState().setSession('dev-token', { id: '1', name: 'Dev', roles: ['admin'] })
-        return
+  try {
+    const resp = await api.post('/auth/login', { email, password })
+
+    // payload = objeto que veio do backend
+    const payload = resp.data || resp
+
+    // TOKEN:
+    const token =
+      payload?.data?.access_token ||
+      payload?.data?.token ||
+      payload?.token
+
+    // USER:
+    const user =
+      payload?.data?.user ||
+      payload?.data
+
+    if (!token || !user) {
+      throw new Error('Token ou usuário não recebidos do servidor')
     }
-    const { data } = await http.post('/auth/login', { email, password })
-    useAuthStore.getState().setSession(data.access_token, data.user)
+
+    useAuthStore.getState().setSession(token, user)
+
+    return { ok: true, user, token }
+  } catch (err) {
+    const message =
+      err?.response?.data?.message ||
+      err.message ||
+      'Erro ao autenticar'
+    return { ok: false, message }
+  }
+}
+
+export function logout() {
+  useAuthStore.getState().clear()
 }

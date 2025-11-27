@@ -1,6 +1,5 @@
-import { http } from '../../services/http'
+import { http }  from '../../services/http'
 
-// Lista com paginação simples (back aceita page/limit/sortBy/order)
 export async function fetchShipments(q) {
   const page  = q?.page ?? 1
   const limit = q?.perPage ?? 25
@@ -13,6 +12,17 @@ export async function fetchShipments(q) {
   const { data } = await http.get('/pedidos', { params: { page, limit, sortBy, order } })
   const rows = Array.isArray(data?.data) ? data.data : []
   return { data: rows, meta: { page, perPage: limit, total: undefined } }
+}
+
+export async function fetchShipmentDetails(id) {
+  try {
+    const { data } = await http.get(`/pedidos/${id}`)
+    console.log('Dados do pedido:', data)  
+    return data
+  } catch (error) {
+    console.error('Erro ao buscar detalhes do pedido:', error)
+    throw error
+  }
 }
 
 export async function getShipment(id) {
@@ -28,6 +38,14 @@ export async function createShipment(payload) {
 export async function updateShipment(id, payload) {
   const { data } = await http.patch(`/pedidos/${id}`, payload)
   return data?.data
+}
+
+export const acceptShipment = async (id, veiculoId, motoristaId) => {
+  const res = await http.patch(`/pedidos/${id}/aceitar`, {
+    veiculoId,
+    motoristaId,
+  })
+  return res.data
 }
 
 export async function deleteShipment(id) {

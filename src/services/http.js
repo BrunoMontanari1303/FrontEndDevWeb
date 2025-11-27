@@ -1,46 +1,68 @@
 import axios from 'axios'
 import { useAuthStore } from '../features/auth/useAuthStore'
 
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
-export const http = axios.create({ baseURL: import.meta.env.VITE_API_URL })
-
-
-http.interceptors.request.use((config) => {
-    const { token } = useAuthStore.getState()
-    if (token) config.headers.Authorization = `Bearer ${token}`
-    return config
+const http = axios.create({
+  baseURL,
+  withCredentials: false,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 })
 
-
-let refreshing = null
-
+http.interceptors.request.use(
+  (config) => {
+    try {
+      const { token } = useAuthStore.getState()
+      if (token) {
+        config.headers = config.headers || {}
+        config.headers.Authorization = `Bearer ${token}`
+      }
+    } catch (e) {
+      console.warn('[HTTP] Erro ao ler token do store', e)
+    }
+    return config
+  },
+  (error) => Promise.reject(error)
+)
 
 http.interceptors.response.use(
-    (res) => res,
-    async (err) => {
-        const { response, config } = err
-        if (response?.status === 401 && !config.__isRetry) {
-            if (!refreshing) {
-                refreshing = (async () => {
-                    try {
-                        const { data } = await axios.post(`${import.meta.env.VITE_API_URL}/auth/refresh`, {}, { withCredentials: true })
-                        useAuthStore.getState().setSession(data.access_token, data.user)
-                        return data.access_token
-                    } catch (e) {
-                        useAuthStore.getState().clear()
-                        return null
-                    } finally {
-                        setTimeout(() => { refreshing = null }, 0)
-                    }
-                })()
-            }
-            const newToken = await refreshing
-            if (newToken) {
-                config.__isRetry = true
-                config.headers.Authorization = `Bearer ${newToken}`
-                return http(config)
-            }
-        }
-        return Promise.reject(err)
+  (response) => response,
+  (error) => {
+    const cfg = error?.config || {}
+
+    try {
+      console.group?.('[API ERROR]')
+      console.log?.('URL:', `${cfg.baseURL || baseURL || ''}${cfg.url || ''}`)
+      console.log?.('Method:', cfg.method)
+      console.log?.('Status:', error?.response?.status)
+      console.log?.('Response data:', error?.response?.data)
+      console.log?.('Message:', error?.message)
+      console.groupEnd?.()
+    } catch {
     }
+
+    const status = error?.response?.status
+
+    if (status === 401) {
+      try {
+        useAuthStore.getState().clear()
+      } catch (e) {
+        console.warn('[HTTP] Erro ao limpar store após 401', e)
+      }
+
+      const isOnLogin = window.location.pathname === '/login'
+      const isLoginRequest = cfg.url?.includes('/auth/login')
+
+      if (!isOnLogin && !isLoginRequest) {
+        window.location.href = '/login'
+      }
+    }
+
+    return Promise.reject(error)
+  }
 )
+
+export default http
+export { http }
