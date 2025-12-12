@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createUser } from '../features/users/api'
+import toast from 'react-hot-toast'
+import api from '../services/api'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
@@ -14,25 +15,50 @@ export default function RegisterPage() {
 
   async function handleSubmit(e) {
     e.preventDefault()
+    setError('')
     setLoading(true)
 
+    if (!nome || !email || !senha || !confirmSenha) {
+      setError('Preencha todos os campos.')
+      setLoading(false)
+      return
+    }
+
+    if (senha !== confirmSenha) {
+      setError('As senhas não conferem.')
+      setLoading(false)
+      return
+    }
+
+    if (senha.length < 6) {
+      setError('A senha deve ter pelo menos 6 caracteres.')
+      setLoading(false)
+      return
+    }
+
     try {
-      const response = await api.post('/auth/register', {
+      await api.post('/auth/register', {
         nome,
         email,
         senha,
+        tipoPerfil,
       })
 
       toast.success('Conta criada com sucesso! Faça login para continuar.')
       navigate('/login')
     } catch (err) {
+      let message = 'Erro ao criar conta. Tente novamente.'
+
       if (err.response?.status === 409) {
-        toast.error('Já existe um usuário com esse e-mail.')
+        message = 'Já existe um usuário com esse e-mail.'
       } else if (err.response?.status === 422) {
-        toast.error('Dados inválidos. Verifique os campos.')
-      } else {
-        toast.error('Erro ao criar conta. Tente novamente.')
+        message = 'Dados inválidos. Verifique os campos.'
+      } else if (err.response?.data?.message) {
+        message = err.response.data.message
       }
+
+      setError(message)
+      toast.error(message)
     } finally {
       setLoading(false)
     }
@@ -55,6 +81,7 @@ export default function RegisterPage() {
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
                 placeholder="Seu nome completo"
+                required
               />
             </div>
 
@@ -66,27 +93,30 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="seuemail@exemplo.com"
+                required
               />
             </div>
 
             <div className="mb-3">
               <label className="form-label">Senha</label>
               <input
-                type="password"
+                type="senha"
                 className="form-control"
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
                 placeholder="Mínimo 6 caracteres"
+                required
               />
             </div>
 
             <div className="mb-3">
               <label className="form-label">Confirmar senha</label>
               <input
-                type="password"
+                type="senha"
                 className="form-control"
                 value={confirmSenha}
                 onChange={(e) => setConfirmSenha(e.target.value)}
+                required
               />
             </div>
 

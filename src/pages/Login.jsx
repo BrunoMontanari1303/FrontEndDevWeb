@@ -7,8 +7,8 @@ export default function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const [email, setEmail] = useState(localStorage.getItem('remember_email') || '')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
+  const [senha, setSenha] = useState('')
+  const [showSenha, setShowSenha] = useState(false)
   const [remember, setRemember] = useState(!!localStorage.getItem('remember_email'))
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -25,7 +25,7 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
 
-    if (!email || !password) {
+    if (!email || !senha) {
       setError('Preencha e-mail e senha.')
       return
     }
@@ -35,7 +35,7 @@ export default function LoginPage() {
     }
 
     setLoading(true)
-    const res = await login(email.trim(), password)
+    const res = await login(email.trim(), senha)
     setLoading(false)
 
     if (!res.ok) {
@@ -97,20 +97,20 @@ export default function LoginPage() {
                   <label className="form-label">Senha</label>
                   <div className="input-group">
                     <input
-                      type={showPassword ? 'text' : 'password'}
+                      type={showSenha ? 'text' : 'senha'}
                       className="form-control"
                       placeholder="••••••••"
-                      autoComplete="current-password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      autoComplete="current-senha"
+                      value={senha}
+                      onChange={(e) => setSenha(e.target.value)}
                     />
                     <button
                       className="btn btn-outline-secondary"
                       type="button"
-                      onClick={() => setShowPassword((s) => !s)}
-                      aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                      onClick={() => setShowSenha((s) => !s)}
+                      aria-label={showSenha ? 'Ocultar senha' : 'Mostrar senha'}
                     >
-                      {showPassword ? 'Ocultar' : 'Mostrar'}
+                      {showSenha ? 'Ocultar' : 'Mostrar'}
                     </button>
                   </div>
                 </div>

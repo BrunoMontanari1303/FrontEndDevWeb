@@ -2,9 +2,9 @@ import api from '../../services/api'
 import { useAuthStore } from './useAuthStore'
 
 // login: envia email e senha para o backend e guarda token
-export async function login(email, password) {
+export async function login(email, senha) {
   try {
-    const resp = await api.post('/auth/login', { email, password })
+    const resp = await api.post('/auth/login', { email, senha })
 
     // payload = objeto que veio do backend
     const payload = resp.data || resp
