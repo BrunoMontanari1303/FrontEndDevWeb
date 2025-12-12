@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '../features/auth/useAuthStore'
-import { updateUser } from '../features/users/api'
+import { updateMyProfile } from '../features/users/api'
 
 export default function ProfileEditPage() {
     const { user, token, setSession } = useAuthStore()
@@ -21,7 +21,6 @@ export default function ProfileEditPage() {
         return <div className="p-4">Nenhum usuário logado.</div>
     }
 
-    // traduz o papel numérico ou string para um rótulo amigável
     const perfilLabel = (() => {
         const papel = user.papel
         if (papel === 1 || papel === 'ADMIN') return 'Administrador'
@@ -30,25 +29,24 @@ export default function ProfileEditPage() {
         return String(papel)
     })()
 
-    
+
     const handleSubmit = async (e) => {
         e.preventDefault()
         setError('')
         setMessage('')
 
         try {
-            const updated = await updateUser(user.id, {
+            const updated = await updateMyProfile({
                 nome,
                 email,
             })
 
-            // updated é o que veio do backend: { id, nome, email, papel }
             const newUser = {
                 ...user,
                 ...updated,
             }
 
-            setSession(token, newUser) // 👈 aqui você grava o nome novo no store/localStorage
+            setSession(token, newUser)
 
             setMessage('Perfil atualizado com sucesso!')
         } catch (err) {

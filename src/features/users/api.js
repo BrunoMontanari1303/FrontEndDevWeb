@@ -18,3 +18,9 @@ export async function updateUser(id, payload) {
   const resp = await api.patch(`/usuarios/${id}`, payload)
   return resp.data?.data
 }
+
+// Atualizar o próprio perfil
+export async function updateMyProfile(payload) {
+  const resp = await api.patch('/me', payload)
+  return resp.data?.data
+}
