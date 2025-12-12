@@ -47,7 +47,6 @@ export default function ProfileEditPage() {
             }
 
             setSession(token, newUser)
-
             setMessage('Perfil atualizado com sucesso!')
         } catch (err) {
             setError('Erro ao atualizar perfil.')
