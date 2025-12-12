@@ -32,27 +32,21 @@ export default function ProfileEditPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        setSaving(true)
         setError('')
         setMessage('')
 
         try {
-            const updated = await updateMyProfile({
-                nome,
-                email,
-            })
-
-            const newUser = {
-                ...user,
-                ...updated,
-            }
-
-            setSession(token, newUser)
+            const updated = await updateMyProfile({ nome, email })
+            setSession(token, { ...user, ...updated })
             setMessage('Perfil atualizado com sucesso!')
         } catch (err) {
             setError('Erro ao atualizar perfil.')
+        } finally {
+            setSaving(false)
         }
     }
-
+    
     return (
         <div className="container py-4">
             <h2 className="mb-4">Meu perfil</h2>
