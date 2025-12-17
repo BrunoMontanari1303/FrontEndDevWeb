@@ -6,7 +6,6 @@ export async function login(email, senha) {
   try {
     const resp = await api.post('/auth/login', { email, senha })
 
-    // payload = objeto que veio do backend
     const payload = resp.data || resp
 
     // TOKEN:
