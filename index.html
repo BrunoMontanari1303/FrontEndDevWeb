@@ -5,18 +5,9 @@
     <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Logix</title>
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self';">
-    <title>Testando CSP com Scripts Inline</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
-    <h1>Testando CSP com Scripts Inline</h1>
-
-    <!-- Este script é inline e violará a política CSP configurada -->
-    <script>
-        alert('Este é um script inline que viola a CSP!');
-    </script>
-
   </body>
 </html>
